@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Task Manager</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#6c4cff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tasks">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<script>try{var t=localStorage.getItem("theme-v1");if(t!=="light"&&t!=="night")t=matchMedia("(prefers-color-scheme: dark)").matches?"night":"light";document.documentElement.setAttribute("data-theme",t)}catch(e){document.documentElement.setAttribute("data-theme","light")}</script>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="brand"><svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+        <defs><linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:var(--teal)"/></linearGradient></defs>
+        <rect width="40" height="40" rx="11" fill="url(#lg)"/>
+        <rect x="9" y="8" width="20" height="25" rx="3.5" fill="#fff"/>
+        <rect x="13" y="5.5" width="3" height="6" rx="1.5" fill="#3b2a99"/><rect x="18.5" y="5.5" width="3" height="6" rx="1.5" fill="#3b2a99"/><rect x="24" y="5.5" width="3" height="6" rx="1.5" fill="#3b2a99"/>
+        <rect x="13" y="16" width="12" height="2" rx="1" fill="#b9b2e8"/><rect x="13" y="21" width="9" height="2" rx="1" fill="#b9b2e8"/><rect x="13" y="26" width="6" height="2" rx="1" fill="#b9b2e8"/>
+        <circle cx="29" cy="29" r="8" fill="#fff"/><circle cx="29" cy="29" r="6.2" fill="#0ea5a4"/>
+        <path d="M29 25.2V29l2.6 1.6" stroke="#fff" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg><h1>Tasks</h1></div>
+    <div class="right">
+      <p class="hello">Hello, <button class="namebtn" id="nameBtn" title="Change name">friend</button>!</p>
+      <button class="ghost" id="undo" title="Undo last action" disabled>Undo</button>
+    </div>
+  </header>
+
+  <section class="hero" aria-label="Progress">
+    <div>
+      <p class="hero-label">Your progress</p>
+      <p class="hero-text" id="progressText">No tasks yet</p>
+    </div>
+    <div class="meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="meter"><span id="meterFill"></span></div>
+  </section>
+
+  <section class="stats" aria-label="Summary">
+    <div class="stat s-pending"><b id="np">0</b><span>Pending</span></div>
+    <div class="stat s-late"><b id="nl">0</b><span>Overdue</span></div>
+    <div class="stat s-done"><b id="nc">0</b><span>Completed</span></div>
+  </section>
+
+  <section class="list">
+    <div class="tools">
+      <input id="q" type="search" placeholder="Search title or subject" aria-label="Search tasks">
+      <select id="sort" aria-label="Sort tasks">
+        <option value="deadline">By deadline</option>
+        <option value="priority">By priority</option>
+        <option value="added">Order added</option>
+      </select>
+    </div>
+    <h2 class="group">Pending</h2>
+    <ul id="pending"></ul>
+    <div id="doneWrap">
+      <h2 class="group">Completed</h2>
+      <ul id="completed"></ul>
+    </div>
+    <p class="foot">Array, linked list, stack, linear search and insertion sort power this app.</p>
+  </section>
+
+  <figure class="quote" aria-label="Motivational quote">
+    <blockquote id="quoteText"></blockquote>
+    <figcaption id="quoteCite"></figcaption>
+  </figure>
+</div>
+
+<!-- round buttons -->
+<nav class="fabs" aria-label="Quick actions">
+  <button class="fab small-fab" id="fabDone" title="Show or hide completed" aria-label="Show or hide completed tasks" aria-pressed="true">&#10003;</button>
+  <button class="fab small-fab" id="fabTheme" title="Switch to night theme" aria-label="Switch to night theme">&#9790;</button>
+  <button class="fab main-fab" id="fabAdd" title="Add task" aria-label="Add task">+</button>
+</nav>
+
+<!-- add / edit window -->
+<dialog id="dlg" aria-labelledby="formTitle">
+  <form id="form" onsubmit="return false">
+    <h2 id="formTitle">New task</h2>
+    <label for="title">Title</label>
+    <input id="title" maxlength="80" placeholder="Lab 4: linked list" autocomplete="off">
+    <label for="subject">Subject</label>
+    <input id="subject" maxlength="40" placeholder="Data Structures" autocomplete="off">
+    <div class="two">
+      <div><label for="deadline">Deadline date</label><input id="deadline" type="date"></div>
+      <div><label for="dtime">Time</label><input id="dtime" type="time" value="23:59"></div>
+    </div>
+    <label for="priority">Priority</label>
+    <select id="priority"><option>High</option><option selected>Medium</option><option>Low</option></select>
+    <label for="details">Notes</label>
+    <textarea id="details" placeholder="Optional"></textarea>
+    <p class="err" id="err" role="alert"></p>
+    <div class="row">
+      <button class="ghost" id="cancel" type="button">Cancel</button>
+      <button class="primary" id="save" type="button">Add task</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- name window: asked on first open, reused to change the name -->
+<dialog id="nameDlg" aria-labelledby="nameTitle">
+  <form id="nameForm">
+    <h2 id="nameTitle">Welcome!</h2>
+    <p class="sub" id="nameSub">Before we start, what should I call you?</p>
+    <label for="nameInput">Your name</label>
+    <input id="nameInput" maxlength="30" placeholder="Enter your name" autocomplete="given-name">
+    <p class="err" id="nameErr" role="alert"></p>
+    <div class="row">
+      <button class="ghost" id="nameCancel" type="button" hidden>Cancel</button>
+      <button class="primary" id="nameSave" type="submit">Continue</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="app.js"></script>
+<script src="quotes.js"></script>
+</body>
+</html>
